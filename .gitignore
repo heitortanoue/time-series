@@ -1,3 +1,6 @@
+#The ./folder with the SQLite Db 
+data
+
 ### R ###
 # History files
 .Rhistory
@@ -52,3 +55,19 @@ rsconnect/
 ### R.Bookdown Stack ###
 # R package: bookdown caching files
 /*_files/
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
