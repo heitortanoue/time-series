@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 import streamlit as st
 
-filter_df = read_csv("./data/filters.csv")
+filter_df = read_csv("../filters.csv")
 
 
 def lvl_1_filter() -> List[str]:
