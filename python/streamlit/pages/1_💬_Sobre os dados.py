@@ -2,7 +2,9 @@ import streamlit as st
 from data import download_SQLiteDb 
 from functions.dbFunctions import *
 import altair as alt
-import random
+from functions.dbFunctions import *
+from functions.filterFunctions import *
+import pandas as pd
 
 #Variável de estado 
 if 'download_data_button' not in st.session_state:
@@ -68,6 +70,15 @@ placeholder_2 = st.empty()
 df_choose = DataFrame()
 
 if st.session_state['downloaded_data']:
+    filter_lvl1 = st.sidebar.multiselect(
+        "Selecione os países",
+        options=lvl_1_filter()
+    )
+
+    filter_lvl2 = st.sidebar.multiselect(
+        "Selecione os Estados",
+        options=lvl_2_filter(filter_lvl1)
+    )
     if placeholder_1.button("Dados Nacionais - Nível 01"):
         df_lvl1 = getLvl1Data()
         placeholder_1.empty()
@@ -89,14 +100,11 @@ if st.session_state['downloaded_data']:
     #     placeholder_3.empty()
     #     st.markdown("### Dados a Nivel Regional") 
     #     st.write(df_lvl3)
-
+        
         if st.button("Mostrar grafico de variavel no tempo"):
             st.session_state['chart_mode'] = True
     elif st.session_state['choose_df'] in ('1','2') and not st.session_state['plot_mode']:
-        st.session_state['country_mode'] = st.checkbox("Dividir por pais", key='toggle_pais')
         df_choose = getLvl1Data()
-        if st.session_state['country_mode']:
-            pais_select = st.selectbox("Qual pais deseja plotar?",df_choose['administrative_area_level_1'].unique())
         columns_filter = []
         dtypes = df_choose.dtypes.apply(lambda x: x.name).to_dict()
         for column in dtypes:
@@ -105,12 +113,33 @@ if st.session_state['downloaded_data']:
         st.session_state['column_plot'] = st.selectbox("Qual variavel você deseja plotar no tempo?",
                                 columns_filter)
         if st.button("Gerar gráfico"):
-            st.session_state['plot_mode'] = True
+            if filter_lvl1 == []:
+                st.markdown("Selecione um país")
+            else:
+                st.session_state['plot_mode'] = True
             st.write(df_choose)
     elif st.session_state['choose_df'] in ('1','2'):
             if st.session_state['choose_df'] == '1':
-                if st.session_state['country_mode']:
-                    st.markdown("")
+                
+                #filter_lvl1
+                df_choose =  getLvl1Data().query("administrative_area_level_1 == '" + filter_lvl1[0] + "'")
+                #df_choose['date'] = pd.to_datetime(df_choose['date'])
+                #df_choose = df_choose[["confirmed", "date"]]
+                
+                #st.dataframe(df_choose)
+
+                bar_chart_top10 = alt.Chart(df_choose).mark_line(point=True).encode(
+                    y=alt.Y('confirmed:Q'),
+                    x = alt.X('date:T')
+                    #color=alt.Color(
+                    #    "Country",
+                    #    scale=alt.Scale(
+                    #    domain = top_10_countries.Country.tolist(),
+                    #    range = ['red']*3+['steelblue']*7),
+                    #    legend=None
+                    #)
+                )
+                st.altair_chart(bar_chart_top10, use_container_width=True)
                     #print(df_choose.columns)
                     #df_choose = df_choose[['administrative_area_level_1', 'date', st.session_state['column_plot']]]
                     #random.seed(len(df_choose))
