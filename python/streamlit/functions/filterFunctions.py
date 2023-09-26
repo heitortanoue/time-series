@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 import streamlit as st
 
-filter_df = read_csv("../filters.csv")
+filter_df = read_csv("./filters.csv")
 
 
 def lvl_1_filter() -> List[str]:
@@ -13,7 +13,7 @@ def lvl_1_filter() -> List[str]:
 
 def lvl_2_filter(lst:List[str]) -> List[str]:
     condition = filter_df['administrative_area_level_1'].isin(lst)
-    lvl_2_filter = filter_df[condition]['administrative_area_level_2']
+    lvl_2_filter = (filter_df[condition]['administrative_area_level_1'] + ' - ' + filter_df[condition]['administrative_area_level_2']).unique()
     return lvl_2_filter
 
 

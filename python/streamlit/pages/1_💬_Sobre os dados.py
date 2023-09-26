@@ -1,7 +1,7 @@
 import streamlit as st 
 from data import download_SQLiteDb 
 from functions.dbFunctions import *
-import matplotlib.pyplot as plt
+import altair as alt
 import random
 
 #Variável de estado 
