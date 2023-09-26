@@ -36,6 +36,7 @@ if 'column_plot' not in st.session_state:
 st.markdown("# Informações Importantes sobre os dados" ) 
 st.markdown("Aqui escrevemos as coisas") 
 
+
     
 
 if st.session_state['download_data_button'] is False:
@@ -110,8 +111,9 @@ if st.session_state['downloaded_data']:
         for column in dtypes:
             if dtypes[column] != 'object':
                 columns_filter.append(column)
-        st.session_state['column_plot'] = st.selectbox("Qual variavel você deseja plotar no tempo?",
+        dropdown = st.selectbox("Qual variavel você deseja plotar no tempo?",
                                 columns_filter)
+        st.session_state['column_plot'] = dropdown if dropdown is not None else st.session_state['column_plot']
         if st.button("Gerar gráfico"):
             if filter_lvl1 == []:
                 st.markdown("Selecione um país")
@@ -122,14 +124,23 @@ if st.session_state['downloaded_data']:
             if st.session_state['choose_df'] == '1':
                 
                 #filter_lvl1
+                columns_filter = []
                 df_choose =  getLvl1Data().query("administrative_area_level_1 == '" + filter_lvl1[0] + "'")
+                dtypes = df_choose.dtypes.apply(lambda x: x.name).to_dict()
+                for column in dtypes:
+                    if dtypes[column] != 'object':
+                        columns_filter.append(column)
+                dropdown = st.selectbox("Qual variavel você deseja plotar no tempo?",
+                                columns_filter)
+                st.session_state['column_plot'] = dropdown if dropdown is not None else st.session_state['column_plot']
+                
                 #df_choose['date'] = pd.to_datetime(df_choose['date'])
                 #df_choose = df_choose[["confirmed", "date"]]
                 
                 #st.dataframe(df_choose)
-
+                column = st.session_state['column_plot']
                 bar_chart_top10 = alt.Chart(df_choose).mark_line(point=True).encode(
-                    y=alt.Y('confirmed:Q'),
+                    y=alt.Y(column+':Q'),
                     x = alt.X('date:T')
                     #color=alt.Color(
                     #    "Country",
