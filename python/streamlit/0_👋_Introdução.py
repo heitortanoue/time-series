@@ -2,9 +2,10 @@ import streamlit as st
 
 
 #WIDE LAYOUT
-st.set_page_config(layout="wide") 
+st.set_page_config(layout="wide", page_title="Dashboard", page_icon="🧬") 
 
 #SIDEBAR 
+st.sidebar.image("../../www/img/logo.jpeg")
 st.sidebar.title("SME-0808 - Dashboard COVID-19") 
 st.sidebar.info(
     """
@@ -18,6 +19,10 @@ st.sidebar.info(
     """
 ) 
 
+#SIDEBAR - FILTER 
+ 
+
+#BODY
 st.markdown("# Dashboard - COVID-19 🧬")
 
 st.markdown("## 👋 Olá!")

@@ -1,7 +1,5 @@
 #Connect to the SQLite Db 
 import sqlite3
-from logging import Logger, INFO
-import os
 from typing import Union, Optional, Any, List
 from pandas import DataFrame
 from pathlib import Path
