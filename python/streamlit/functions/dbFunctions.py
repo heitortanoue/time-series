@@ -25,13 +25,16 @@ class DbConnSQLite:
         #Abrindo conexao 
         self.conn = sqlite3.connect(database="./data/latest.db") 
         
-    def execute_sql(self, query:str, return_df: bool = False, verbose: bool = False, return_dict: bool = False, **kwargs) -> Union[DataFrame, List[Any]]:
+    def execute_sql(self, query:str, params: dict = None, return_df: bool = False, verbose: bool = False, return_dict: bool = False, **kwargs) -> Union[DataFrame, List[Any]]:
 
         #Abrindo cursor 
         cur = self.conn.cursor()
         try:
             #Executando Query 
-            cur.execute(query, kwargs) 
+            if params is not None:
+                cur.execute(query, params)  
+            else:
+                cur.execute(query)
             #Printando query executada 
             if verbose:
                 print(f"\nQuery Executada:\n\n{query}\n")
@@ -66,17 +69,7 @@ def getLvl1Data():
                 l.administrative_area_level_3,
                 l.latitude,
                 l.longitude,
-                l.population,
-                l.iso_alpha_3,
-                l.iso_alpha_2,
-                l.iso_numeric,
-                l.iso_currency,
-                l.key_local,
-                l.key_google_mobility,
-                l.key_apple_mobility,
-                l.key_jhu_csse,
-                l.key_nuts,
-                l.key_gadm
+                l.population
             FROM timeseries t 
             LEFT JOIN location l on l.id = t.id
             WHERE l.administrative_area_level = 1;
@@ -101,17 +94,7 @@ def getLvl2Data():
                 l.administrative_area_level_3,
                 l.latitude,
                 l.longitude,
-                l.population,
-                l.iso_alpha_3,
-                l.iso_alpha_2,
-                l.iso_numeric,
-                l.iso_currency,
-                l.key_local,
-                l.key_google_mobility,
-                l.key_apple_mobility,
-                l.key_jhu_csse,
-                l.key_nuts,
-                l.key_gadm
+                l.population
             FROM timeseries t 
             LEFT JOIN location l on l.id = t.id
             WHERE l.administrative_area_level = 2;
@@ -124,11 +107,13 @@ def getLvl2Data():
     return df
 
 @st.cache_data
-def getLvl3Data():
-    
+def getFilteredData(query_params1=None, query_params2=None, query_params3=None):
     conn = DbConnSQLite()
 
-    query = f"""
+    if query_params1 is not None and query_params2 is None and query_params3 is None:
+        query_params1 = ','.join(query_params1)
+
+        query = """
             SELECT t.*,
                 l.administrative_area_level,
                 l.administrative_area_level_1,
@@ -136,24 +121,62 @@ def getLvl3Data():
                 l.administrative_area_level_3,
                 l.latitude,
                 l.longitude,
-                l.population,
-                l.iso_alpha_3,
-                l.iso_alpha_2,
-                l.iso_numeric,
-                l.iso_currency,
-                l.key_local,
-                l.key_google_mobility,
-                l.key_apple_mobility,
-                l.key_jhu_csse,
-                l.key_nuts,
-                l.key_gadm
+                l.population
             FROM timeseries t 
             LEFT JOIN location l on l.id = t.id
-            WHERE l.administrative_area_level = 3;
+            WHERE l.administrative_area_level_1 IN (?);
             """ 
-    
-    df = conn.execute_sql(query=query, return_df=True)  
 
-    st.session_state['downloaded_lvl3_data'] = True
+        params = [query_params1]
+
+    elif query_params1 is not None and query_params2 is not None and query_params3 is None:
+        query_params1 = ','.join(query_params1)
+        query_params2 = ','.join(query_params2)
+
+        query = """
+            SELECT t.*,
+                l.administrative_area_level,
+                l.administrative_area_level_1,
+                l.administrative_area_level_2,
+                l.administrative_area_level_3,
+                l.latitude,
+                l.longitude,
+                l.population
+            FROM timeseries t 
+            LEFT JOIN location l on l.id = t.id
+            WHERE l.administrative_area_level_1 IN (?)
+                AND l.administrative_area_level_2 IN (?);
+            """ 
+
+        params = [query_params1, query_params2]
+
+    elif query_params1 is not None and query_params2 is not None and query_params3 is not None:
+        query_params1 = ','.join(query_params1)
+        query_params2 = ','.join(query_params2)
+        query_params3 = ','.join(query_params3)
+
+        query = """
+            SELECT t.*,
+                l.administrative_area_level,
+                l.administrative_area_level_1,
+                l.administrative_area_level_2,
+                l.administrative_area_level_3,
+                l.latitude,
+                l.longitude,
+                l.population
+            FROM timeseries t 
+            LEFT JOIN location l on l.id = t.id
+            WHERE l.administrative_area_level_1 IN (?)
+                AND l.administrative_area_level_2 IN (?)
+                AND l.administrative_area_level_3 IN (?);
+            """ 
+
+        params = [query_params1, query_params2, query_params3]
+
+    else:
+        # Handle the case when no valid filter parameters are provided
+        return None
+
+    df = conn.execute_sql(query, params=params, return_df=True) 
 
     return df

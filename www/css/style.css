@@ -1,5 +1,5 @@
-.css-vmtpwk {
-background-color: white;
-background-image: none;
-color: #ffffff;
+div[data-testid="stExpander"] div[role="button"] p
+{
+    font-size: 1.3rem;
+    color:rgb(235, 238, 238);
 }
