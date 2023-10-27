@@ -66,6 +66,9 @@ if st.session_state['download_data_button'] is False:
 #FILTROS 
 st.sidebar.header("Selecione os filtros")
 
+# Date filter
+date_range = date_filter(getLvl1Data())
+
 filter_lvl1 = st.sidebar.multiselect(
     "Selecione os Países",
     options=lvl_1_filter()
@@ -82,6 +85,8 @@ if filter_lvl1:
 
     df = getLvl1Data()
     df = df[df['administrative_area_level_1'].isin(filter_lvl1)]
+    #filtra as datas 
+    df  = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
 
     #Adiciona dataframe ao placeholder 
     dataframe_placeholder.dataframe(df)
@@ -97,6 +102,7 @@ if filter_lvl1:
 
         df = getLvl2Data() 
         df = df[df['administrative_area_level_2'].isin(query_params2)]
+        df  = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
 
         #Adiciona dataframe ao placeholder 
         dataframe_placeholder.dataframe(df)
@@ -106,96 +112,31 @@ if filter_lvl1:
             query_params1, query_params2, query_params3 = query_params(filter1=filter_lvl1, filter2=filter_lvl2, filter3=filter_lvl3) 
 
             df = getFilteredData(query_params1, query_params2, query_params3)
+            df  = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
 
             #Adiciona dataframe ao placeholder 
             dataframe_placeholder.dataframe(df)
 
-    # if placeholder_1.button("Dados Nacionais - Nível 01"):
-    #     df_lvl1 = getLvl1Data()
-    #     placeholder_1.empty()
-    #     st.markdown("### Dados a Nivel Nacional") 
-    #     st.write(df_lvl1)
-    #     st.session_state['choose_df'] = '1'
-    
-    # if placeholder_2.button("Dados Nacionais - Nível 02"):
-    #     df_lvl2 = getLvl2Data()
-    #     placeholder_2.empty()
-    #     st.markdown("### Dados a Nivel Sub-Nacional") 
-    #     st.write(df_lvl2) 
-    #     df_choose = df_lvl2
-    #     st.session_state['choose_df'] = '2'
+# # Filter data based on date range
+# filtered_data = data[(data['date'] >= date_range[0]) & (data['date'] <= date_range[1])
 
-    # if st.session_state['choose_df'] in ('1','2') and not st.session_state['chart_mode'] and not st.session_state['plot_mode']:
-    # # if placeholder_3.button("Dados Nacionais - Nível 01"):
-    # #     df_lvl3 = getLvl3Data()
-    # #     placeholder_3.empty()
-    # #     st.markdown("### Dados a Nivel Regional") 
-    # #     st.write(df_lvl3)
-        
-    #     if st.button("Mostrar grafico de variavel no tempo"):
-    #         st.session_state['chart_mode'] = True
-    # elif st.session_state['choose_df'] in ('1','2') and not st.session_state['plot_mode']:
-    #     df_choose = getLvl1Data()
-    #     columns_filter = []
-    #     dtypes = df_choose.dtypes.apply(lambda x: x.name).to_dict()
-    #     for column in dtypes:
-    #         if dtypes[column] != 'object':
-    #             columns_filter.append(column)
-    #     dropdown = st.selectbox("Qual variavel você deseja plotar no tempo?",
-    #                             columns_filter)
-    #     st.session_state['column_plot'] = dropdown if dropdown is not None else st.session_state['column_plot']
-    #     if st.button("Gerar gráfico"):
-    #         if filter_lvl1 == []:
-    #             st.markdown("Selecione um país")
-    #         else:
-    #             st.session_state['plot_mode'] = True
-    #         st.write(df_choose)
-    # elif st.session_state['choose_df'] in ('1','2'):
-    #         if st.session_state['choose_df'] == '1':
-                
-    #             #filter_lvl1
-    #             columns_filter = []
-    #             df_choose =  getLvl1Data().query("administrative_area_level_1 == '" + filter_lvl1[0] + "'")
-    #             dtypes = df_choose.dtypes.apply(lambda x: x.name).to_dict()
-    #             for column in dtypes:
-    #                 if dtypes[column] != 'object':
-    #                     columns_filter.append(column)
-    #             dropdown = st.selectbox("Qual variavel você deseja plotar no tempo?",
-    #                             columns_filter)
-    #             st.session_state['column_plot'] = dropdown if dropdown is not None else st.session_state['column_plot']
-                
-    #             #df_choose['date'] = pd.to_datetime(df_choose['date'])
-    #             #df_choose = df_choose[["confirmed", "date"]]
-                
-    #             #st.dataframe(df_choose)
-    #             column = st.session_state['column_plot']
-    #             bar_chart_top10 = alt.Chart(df_choose).mark_line(point=True).encode(
-    #                 y=alt.Y(column+':Q'),
-    #                 x = alt.X('date:T')
-    #                 #color=alt.Color(
-    #                 #    "Country",
-    #                 #    scale=alt.Scale(
-    #                 #    domain = top_10_countries.Country.tolist(),
-    #                 #    range = ['red']*3+['steelblue']*7),
-    #                 #    legend=None
-    #                 #)
-    #             )
-    #             st.altair_chart(bar_chart_top10, use_container_width=True)
-    #                 #print(df_choose.columns)
-    #                 #df_choose = df_choose[['administrative_area_level_1', 'date', st.session_state['column_plot']]]
-    #                 #random.seed(len(df_choose))
-    #                 #fig, axes = plt.subplots(nrows=len(df_choose['administrative_area_level_1'].unique()), ncols=1, figsize=(8, 6))
+# # Dropdown to select a column for plotting
+# selected_column = st.selectbox("Select a column for plotting", data.columns[1:])
 
-    #                 # Itere pelos países e plote as linhas em subtramas separadas
-    #                 #for i, pais in enumerate(df_choose['administrative_area_level_1'].unique()):
-    #                 #    subset = df_choose[df_choose['administrative_area_level_1'] == pais]
-    #                 #    axes[i].plot(subset['date'], subset[st.session_state['column_plot']], label=pais, color=(random.random(),random.random(),random.random()))
-    #                 #    axes[i].set_xlabel('Dia')
-    #                 #    axes[i].set_ylabel('Valor')
-    #                 #    axes[i].set_title(f'Valor por Dia - {pais}')
-    #                 #    axes[i].legend()
-    #                 #st.pyplot(fig)
-    #             #else:
-                    
+# # Create Altair plot
+# st.write("Altair Plot:")
+# alt_chart = alt.Chart(filtered_data).mark_line().encode(
+#     x='date:T',
+#     y=alt.Y(selected_column, type='quantitative', aggregate='sum'),
+# ).properties(
+#     width=300,
+#     height=200
+# )
+# st.altair_chart(alt_chart)
 
+# # You can repeat the above code for each of the four columns.
+# # You may also create additional plots and columns as needed.
 
+# # Example to create multiple columns:
+# # with st.beta_container():
+# #     # Add your Altair plot and filters here

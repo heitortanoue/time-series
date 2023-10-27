@@ -1,8 +1,22 @@
 from pandas import read_csv
+import pandas as pd
 from typing import List
 import numpy as np
+import streamlit as st
+from functions.dbFunctions import getLvl1Data
 
 filter_df = read_csv("./filters.csv")
+
+def date_filter(df):
+    df = getLvl1Data()
+    df['date'] = pd.to_datetime(df['date'])
+    d = st.sidebar.date_input(
+    "Selecione o intervalo de tempo",
+    [df['date'].min(), df['date'].max()],
+    format="YYYY-MM-DD",
+)
+    return d
+
 
 def lvl_1_filter() -> List[str]:
     filters = filter_df["administrative_area_level_1"].dropna().unique()

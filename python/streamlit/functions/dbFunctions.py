@@ -4,6 +4,7 @@ from typing import Union, Optional, Any, List
 from pandas import DataFrame
 from pathlib import Path
 import streamlit as st
+import pandas as pd
 
 #Variável de estado 
 if 'download_data_button' not in st.session_state:
@@ -77,6 +78,10 @@ def getLvl1Data():
     
     df = conn.execute_sql(query=query, return_df=True)  
 
+    # Convert date column to datetime and get the date 
+    df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
+    df['date'] = df['date'].apply(lambda x: pd.Timestamp(x).date())
+
     st.session_state['downloaded_lvl1_data'] = True
 
     return df
@@ -101,6 +106,9 @@ def getLvl2Data():
             """ 
     
     df = conn.execute_sql(query=query, return_df=True)  
+    # Convert date column to datetime and get the date 
+    df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
+    df['date'] = df['date'].apply(lambda x: pd.Timestamp(x).date())
 
     st.session_state['downloaded_lvl2_data'] = True
 
@@ -177,6 +185,9 @@ def getFilteredData(query_params1=None, query_params2=None, query_params3=None):
         # Handle the case when no valid filter parameters are provided
         return None
 
-    df = conn.execute_sql(query, params=params, return_df=True) 
+    df = conn.execute_sql(query, params=params, return_df=True)
+    # Convert date column to datetime and get the date 
+    df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
+    df['date'] = df['date'].apply(lambda x: pd.Timestamp(x).date()) 
 
     return df
