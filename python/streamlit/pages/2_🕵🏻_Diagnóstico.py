@@ -20,6 +20,9 @@ with st.expander("📈 Tabela com os dados"):
 #FILTROS 
 st.sidebar.header("Selecione os filtros")
 
+# Date filter
+date_range = date_filter(getLvl1Data())
+
 filter_lvl1 = st.sidebar.multiselect(
     "Selecione os Países",
     options=lvl_1_filter()

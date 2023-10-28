@@ -9,12 +9,11 @@ filter_df = read_csv("./filters.csv")
 
 def date_filter(df):
     df = getLvl1Data()
-    df['date'] = pd.to_datetime(df['date'])
+    df['date'] = pd.to_datetime(df['date']) 
     d = st.sidebar.date_input(
     "Selecione o intervalo de tempo",
     [df['date'].min(), df['date'].max()],
-    format="YYYY-MM-DD",
-)
+    format="YYYY-MM-DD")
     return d
 
 

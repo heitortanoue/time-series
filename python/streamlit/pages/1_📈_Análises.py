@@ -111,11 +111,13 @@ if filter_lvl1:
 
             query_params1, query_params2, query_params3 = query_params(filter1=filter_lvl1, filter2=filter_lvl2, filter3=filter_lvl3) 
 
-            df = getFilteredData(query_params1, query_params2, query_params3)
-            df  = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
+            if getFilteredData(query_params1, query_params2, query_params3)['administrative_area_level_3'].isnull:
+                st.warning(f"**Não há dados referentes a cidade {filter_lvl3}**. Escolha outra cidade.", icon="⚠️")
+            else:
+                df = getFilteredData(query_params1, query_params2, query_params3)
 
             #Adiciona dataframe ao placeholder 
-            dataframe_placeholder.dataframe(df)
+                dataframe_placeholder.dataframe(df)
 
 # # Filter data based on date range
 # filtered_data = data[(data['date'] >= date_range[0]) & (data['date'] <= date_range[1])
