@@ -23,8 +23,8 @@ class DbConnSQLite:
 
     def __init__(self) -> None:
         
-        #Abrindo conexao 
-        self.conn = sqlite3.connect(database="./data/latest.db") 
+        #Abrindo conexao
+        self.conn = sqlite3.connect(database="./data/latest.db")
         
     def execute_sql(self, query:str, params: dict = None, return_df: bool = False, verbose: bool = False, return_dict: bool = False, **kwargs) -> Union[DataFrame, List[Any]]:
 
