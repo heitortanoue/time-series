@@ -82,6 +82,8 @@ def getLvl1Data():
     df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
     df['date'] = df['date'].apply(lambda x: pd.Timestamp(x).date())
 
+    st.session_state['downloaded_lvl1_data'] = True
+
     return df
 
 @st.cache_data
