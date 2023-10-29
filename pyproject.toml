@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "time-series"
+version = "0.1.0"
+description = "Projeto de series temporais da disciplina SME0808 ICMC-USP 2023"
+authors = ["Heitor Carvalho Pinheiro <heitor.c.pinheiro@hotmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+streamlit = {version = "^1.28.0", python = ">=3.8, !=3.9.7"}
+pandas = "^2.1.2"
+requests = "^2.31.0"
+ipykernel = "^6.26.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

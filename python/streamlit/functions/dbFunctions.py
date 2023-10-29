@@ -23,8 +23,8 @@ class DbConnSQLite:
 
     def __init__(self) -> None:
         
-        #Abrindo conexao 
-        self.conn = sqlite3.connect(database="./data/latest.db") 
+        #Abrindo conexao
+        self.conn = sqlite3.connect(database="./data/latest.db")
         
     def execute_sql(self, query:str, params: dict = None, return_df: bool = False, verbose: bool = False, return_dict: bool = False, **kwargs) -> Union[DataFrame, List[Any]]:
 
@@ -81,8 +81,6 @@ def getLvl1Data():
     # Convert date column to datetime and get the date 
     df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
     df['date'] = df['date'].apply(lambda x: pd.Timestamp(x).date())
-
-    st.session_state['downloaded_lvl1_data'] = True
 
     return df
 
