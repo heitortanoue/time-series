@@ -14,10 +14,9 @@ def download_data_button():
     if not buttonPressed:
         return
 
-    with st.sidebar:
-        with st.spinner("Fazendo o download do banco de dados..."):
-            button.empty()
-            download_data()
+
+    button.empty()
+    download_data()
 
     st.sidebar.success("Os dados foram baixados")
     get_sidebar()
@@ -34,6 +33,7 @@ def date_filter(df):
     return d
 
 def create_filters():
+    sessionState.using_state(['locations'])
     date_range = date_filter(database.getLvl1Data())
 
     filter_lvl1 = st.sidebar.multiselect(
@@ -42,6 +42,8 @@ def create_filters():
     )
 
     if not filter_lvl1:
+        sessionState.set_state('locations', None)
+        sessionState.set_state('filter_lv', None)
         return st.empty()
 
     filter_lvl2 = st.sidebar.multiselect(
@@ -56,6 +58,7 @@ def create_filters():
     df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
 
     if not filter_lvl2:
+        sessionState.set_state('locations', filter_lvl1)
         sessionState.set_state('filter_lv', 1)
         return df
 
@@ -71,12 +74,14 @@ def create_filters():
     df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
 
     if not filter_lvl3:
+        sessionState.set_state('locations', filter_lvl2)
         sessionState.set_state('filter_lv', 2)
         return df
 
     query_params1, query_params2, query_params3 = filters.query_params(filter1=filter_lvl1, filter2=filter_lvl2, filter3=filter_lvl3)
 
     sessionState.set_state('filter_lv', 3)
+    sessionState.set_state('locations', filter_lvl3)
     df = database.getFilteredData(query_params1, query_params2, query_params3)
     return df
 
@@ -87,3 +92,6 @@ def get_sidebar():
 
     download_data_button()
     return st.empty()
+
+def get_locations():
+    return sessionState.get_state('locations')
