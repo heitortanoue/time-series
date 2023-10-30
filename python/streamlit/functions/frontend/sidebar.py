@@ -56,6 +56,7 @@ def create_filters():
     df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
 
     if not filter_lvl2:
+        sessionState.set_state('filter_lv', 1)
         return df
 
     filter_lvl3 = st.sidebar.multiselect(
@@ -70,10 +71,12 @@ def create_filters():
     df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
 
     if not filter_lvl3:
+        sessionState.set_state('filter_lv', 2)
         return df
 
     query_params1, query_params2, query_params3 = filters.query_params(filter1=filter_lvl1, filter2=filter_lvl2, filter3=filter_lvl3)
 
+    sessionState.set_state('filter_lv', 3)
     df = database.getFilteredData(query_params1, query_params2, query_params3)
     return df
 
