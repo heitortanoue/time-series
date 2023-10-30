@@ -1,144 +1,59 @@
-import streamlit as st 
-from data import download_SQLiteDb 
-from functions.dbFunctions import *
-import altair as alt
-from functions.dbFunctions import *
-from functions.filterFunctions import *
+import streamlit as st
 import pandas as pd
 
-#Variável de estado 
-if 'download_data_button' not in st.session_state:
-    st.session_state['download_data_button'] = False 
-if 'choose_df' not in st.session_state:
-    st.session_state['choose_df'] = 0 
-if 'chart_mode' not in st.session_state:
-    st.session_state['chart_mode'] = False
+import functions.backend.sessionState as sessionState
+import functions.frontend.sidebar as sidebar
+import functions.utils.columns as columns
+import functions.frontend.analise.barChart as barChart
 
-if 'downloaded_data' not in st.session_state:
-    st.session_state['downloaded_data'] = False 
+# Variável de estado que vamos usar nessa página
+sessionState.using_state(['downloaded_data'])
 
-if 'downloaded_lvl1_data' not in st.session_state:
-    st.session_state['downloaded_lvl1_data'] = False 
+# Mostra a sidebar
+filtered_df = sidebar.get_sidebar()
 
-if 'downloaded_lvl2_data' not in st.session_state:
-    st.session_state['downloaded_lvl2_data'] = False 
+# PAGE STARTS HERE
+st.markdown("# Análises")
 
-if 'plot_mode' not in st.session_state:
-    st.session_state['plot_mode'] = False
+textWarning = 'Nesta seção, convidamos você a realizar uma análise exploratória dos dados de COVID-19. A análise exploratória é uma etapa fundamental para compreender as tendências e padrões nos dados, proporcionando insights valiosos sobre o impacto da pandemia. Para começar, selecione as regiões geográficas de interesse e as variáveis que deseja analisar. Explore os gráficos interativos, personalize a visualização conforme suas preferências e interprete os dados em busca de conclusões relevantes. Compartilhe suas descobertas e insights para contribuir para uma compreensão mais aprofundada da situação da COVID-19'
 
-if 'country_mode' not in st.session_state:
-    st.session_state['country_mode'] = False
+if sessionState.get_state('downloaded_data') is not True:
+    st.markdown(textWarning)
+    st.warning("Faça o download dos dados antes de continuar")
+elif sessionState.get_state('filter_lv') is None:
+    st.markdown(textWarning)
+    st.warning("Selecione os filtros antes de continuar")
 
-if 'column_plot' not in st.session_state:
-    st.session_state['column_plot'] = False
+else:
+    locations = sidebar.get_locations()
+    locations_str = ', '.join([location.split('-')[1] if '-' in location else location for location in locations])
+    st.markdown(f"### {locations_str}")
 
-#PAGE STARTS HERE
-st.markdown("# Análises" ) 
-st.markdown("""Texto e mais texto\n
-            Essa página deve conter os gráficos exploratórios para as variávies epidemiológicas
-            Filtradas em quaisquer um dos níveis e por data.
-            O filtro de data ainda não foi implementado""") 
-
-#DATAFRAME PLACEHOLDER 
-with st.expander("📈 Tabela com os dados"):
-    dataframe_placeholder = st.empty()
-
-if st.session_state['download_data_button'] is False:
-    placeholder_1 = st.empty()
-    if placeholder_1.button("Faça o download dos arquivos"):
-        with st.spinner("Fazendo o download do banco de dados..."):
-            placeholder_1.empty()
-            #DOWNLOAD DOS DADOS
-            db = download_SQLiteDb()
-            st.session_state['downloaded_data'] = True
-            st.session_state['download_data_button'] = True
-        
-            if st.session_state['downloaded_data']:
-                #CACHE DOS NÍVEIS 
-                df_lvl1 = getLvl1Data()
-                st.session_state['downloaded_lvl1_data'] = True
-
-            if st.session_state['downloaded_lvl1_data']:
-                df_lvl2 = getLvl2Data()
-
-        st.success("Os dados foram baixados")
-
-#FILTROS 
-st.sidebar.header("Selecione os filtros")
-
-# Date filter
-date_range = date_filter(getLvl1Data())
-
-filter_lvl1 = st.sidebar.multiselect(
-    "Selecione os Países",
-    options=lvl_1_filter()
-)
-
-if filter_lvl1:
-
-    filter_lvl2 = st.sidebar.multiselect(
-        "Selecione os Estados",
-        options=lvl_2_filter(filter_lvl1)
+    defaultVariables = ['confirmed', 'deaths', 'recovered']
+    variablesSelected = st.multiselect(
+        "Selecione as variáveis que deseja analisar",
+        options = columns.getVariableTranslationList(columns.getColumnGroups('variaveis')),
+        default = columns.getVariableTranslationList(defaultVariables)
     )
 
-    query_params1 = query_params(filter1=filter_lvl1) 
+    # Espaçador
+    st.text("")
 
-    df = getLvl1Data()
-    df = df[df['administrative_area_level_1'].isin(filter_lvl1)]
-    #filtra as datas 
-    df  = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
+    variablesKeys = columns.getVariableKeyList(variablesSelected)
 
-    #Adiciona dataframe ao placeholder 
-    dataframe_placeholder.dataframe(df)
+    barChartColumn, insightsColumn = st.columns(2, gap="large")
 
-    if filter_lvl2:
-                
-        filter_lvl3 = st.sidebar.multiselect(
-            "Selecione as Cidades",
-            options=lvl_3_filter(filter_lvl2)
-        ) 
+    print(filtered_df)
 
-        query_params1, query_params2= query_params(filter1=filter_lvl1, filter2=filter_lvl2) 
+    with barChartColumn:
+        barChart.draw(filtered_df, variablesKeys)
 
-        df = getLvl2Data() 
-        df = df[df['administrative_area_level_2'].isin(query_params2)]
-        df  = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
+    with insightsColumn:
+        st.markdown("### Insights")
+        st.write("Aqui vão os insights")
 
-        #Adiciona dataframe ao placeholder 
-        dataframe_placeholder.dataframe(df)
+    st.markdown("### Gráfico de Linha")
+    lineChartDf = filtered_df.copy()
+    lineChartDf = lineChartDf.rename(columns=columns.getVariableTranslationDict())
 
-        if filter_lvl3:
-
-            query_params1, query_params2, query_params3 = query_params(filter1=filter_lvl1, filter2=filter_lvl2, filter3=filter_lvl3) 
-
-            if getFilteredData(query_params1, query_params2, query_params3)['administrative_area_level_3'].isnull:
-                st.warning(f"**Não há dados referentes a cidade {filter_lvl3}**. Escolha outra cidade.", icon="⚠️")
-            else:
-                df = getFilteredData(query_params1, query_params2, query_params3)
-
-            #Adiciona dataframe ao placeholder 
-                dataframe_placeholder.dataframe(df)
-
-# # Filter data based on date range
-# filtered_data = data[(data['date'] >= date_range[0]) & (data['date'] <= date_range[1])
-
-# # Dropdown to select a column for plotting
-# selected_column = st.selectbox("Select a column for plotting", data.columns[1:])
-
-# # Create Altair plot
-# st.write("Altair Plot:")
-# alt_chart = alt.Chart(filtered_data).mark_line().encode(
-#     x='date:T',
-#     y=alt.Y(selected_column, type='quantitative', aggregate='sum'),
-# ).properties(
-#     width=300,
-#     height=200
-# )
-# st.altair_chart(alt_chart)
-
-# # You can repeat the above code for each of the four columns.
-# # You may also create additional plots and columns as needed.
-
-# # Example to create multiple columns:
-# # with st.beta_container():
-# #     # Add your Altair plot and filters here
+    st.line_chart(lineChartDf, x=columns.getVariableTranslation('date'), y=variablesSelected, use_container_width=True)
