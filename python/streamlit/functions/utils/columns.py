@@ -180,6 +180,8 @@ def getColumnGroups(groupName: list[str]):
         return medidas
     elif groupName == 'outros':
         return outros
+    elif groupName == 'serie_temporal':
+        return variaveis + medidas
 
 def getVariableTranslation(varName):
     return traducao_variaveis[varName]
