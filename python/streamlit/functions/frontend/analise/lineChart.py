@@ -54,11 +54,13 @@ def draw(df, keys):
         up_series = df[serie > 0].copy()
         down_series = df[serie < 0].copy()
         rule_charts.append(alt.Chart(up_series).mark_rule(color='red').encode(
-            x=columns.getVariableTranslation('date')
+            x=columns.getVariableTranslation('date'),
+            tooltip=columns.getVariableTranslation(groupVariable)
         ))
 
         rule_charts.append(alt.Chart(down_series).mark_rule(color='green').encode(
-            x=columns.getVariableTranslation('date')
+            x=columns.getVariableTranslation('date'),
+            tooltip=columns.getVariableTranslation(groupVariable)
         ))
 
     for chart in rule_charts:
