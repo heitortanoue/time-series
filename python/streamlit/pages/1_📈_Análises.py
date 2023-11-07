@@ -5,6 +5,7 @@ import functions.backend.sessionState as sessionState
 import functions.frontend.sidebar as sidebar
 import functions.utils.columns as columns
 import functions.frontend.analise.barChart as barChart
+import functions.frontend.analise.lineChart as lineChart
 
 # Variável de estado que vamos usar nessa página
 sessionState.using_state(['downloaded_data'])
@@ -32,7 +33,7 @@ else:
     defaultVariables = ['confirmed', 'deaths', 'recovered']
     variablesSelected = st.multiselect(
         "Selecione as variáveis que deseja analisar",
-        options = columns.getVariableTranslationList(columns.getColumnGroups('variaveis')),
+        options = columns.getVariableTranslationList(columns.getColumnGroups('serie_temporal')),
         default = columns.getVariableTranslationList(defaultVariables)
     )
 
@@ -56,4 +57,5 @@ else:
     lineChartDf = filtered_df.copy()
     lineChartDf = lineChartDf.rename(columns=columns.getVariableTranslationDict())
 
-    st.line_chart(lineChartDf, x=columns.getVariableTranslation('date'), y=variablesSelected, use_container_width=True)
+    lineChart.draw(lineChartDf, variablesSelected)
+    #st.line_chart(lineChartDf, x=columns.getVariableTranslation('date'), y=variablesSelected, use_container_width=True)
