@@ -52,3 +52,24 @@ def draw(locations, keys):
 
     # Aqui você pode printar ou retornar o DataFrame filtrado
     print(grouped_filtered)
+
+    st.markdown(f'''
+        ## Insights
+    ''')
+
+    for i in range(len(grouped_filtered)):
+        dado = grouped_filtered.iloc[i]
+
+        # cria uma string com o nome da localização e o rank
+        text = f'O :green[{dado.location}] é o ocupa as seguintes posições para cada categoria:'
+
+        # pega as colujnas que terminam em _rank
+        rank_columns = [col for col in grouped_filtered.columns if col.endswith('_rank')]
+
+        text_rank = []
+        # impime para cada coluna rank o nome da variavel e orank em markdlwm
+        for col in rank_columns:
+            text_rank.append(f" **{int(dado[col])}º** para *{columns.getVariableTranslation(col.replace('_rank', ''))}*")
+        
+        st.markdown(text+','.join(text_rank))
+
