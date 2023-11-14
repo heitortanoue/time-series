@@ -16,7 +16,7 @@ def draw(df, keys):
     else:
         groupVariable = 'administrative_area_level_3'
 
-    allowedVariables = ['confirmed', 'deaths', 'recovered', 'tests', 'vaccines', 'people_vaccinated', 'people_fully_vaccinated', 'hosp', 'icu', 'vent']
+    allowedVariables = columns.getColumnGroups('variaveis')
     filtered_variables = [groupVariable] + [var for var in allowedVariables if var in keys]
 
     df_group = df.copy()[filtered_variables]
