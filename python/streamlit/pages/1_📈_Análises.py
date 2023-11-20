@@ -5,6 +5,8 @@ import functions.backend.sessionState as sessionState
 import functions.frontend.sidebar as sidebar
 import functions.utils.columns as columns
 import functions.frontend.analise.barChart as barChart
+
+import functions.frontend.analise.insights as insights
 import functions.frontend.analise.lineChart as lineChart
 
 # Variável de estado que vamos usar nessa página
@@ -44,14 +46,11 @@ else:
 
     barChartColumn, insightsColumn = st.columns(2, gap="large")
 
-    print(filtered_df)
-
     with barChartColumn:
         barChart.draw(filtered_df, variablesKeys)
 
     with insightsColumn:
-        st.markdown("### Insights")
-        st.write("Aqui vão os insights")
+        insights.draw(locations, variablesKeys)
 
     st.markdown("### Gráfico de Linha")
     lineChartDf = filtered_df.copy()
