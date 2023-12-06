@@ -37,20 +37,20 @@ def create_filters(diagnostico:bool=False):
     date_range = date_filter(database.getLvl1Data())
 
     if diagnostico:
-        
-        sessionState.using_state(['lag'])
-        sessionState.using_state(['window'])
-        sessionState.using_state(['decomposition_model'])
+        sessionState.using_state(['lag', 'window', 'decomposition_model'])
 
         window_filter = st.sidebar.multiselect(
             "Selecione a janela de tempo",
             options=['Diária','Semanal', 'Mensal']
         )
 
+        if len(window_filter) <= 0:
+            return
+
         if window_filter[0] == 'Diária':
             sessionState.set_state('window', 'D')
         elif window_filter[0] == 'Semanal':
-            sessionState.set_state('window', 'W') 
+            sessionState.set_state('window', 'W')
         elif window_filter[0] == 'Mensal':
             sessionState.set_state('window','M')
 
@@ -114,13 +114,13 @@ def get_sidebar(diagnostico:bool=False):
     return st.empty()
 
 def get_locations():
-    return sessionState.get_state('locations') 
+    return sessionState.get_state('locations')
 
 def get_window_time():
     return sessionState.get_state('window')
 
 def get_differentiation_lag():
-    return sessionState.get_state('lag') 
+    return sessionState.get_state('lag')
 
 def get_decomposition_model():
     return sessionState.get_state('decomposition_model')

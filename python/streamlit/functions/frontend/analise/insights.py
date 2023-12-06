@@ -28,18 +28,16 @@ def draw(locations, keys):
         filtered_variables = [groupVariable] + ['administrative_area_level_1'] + [var for var in allowedVariables if var in keys]
 
     df_group = data.copy()[filtered_variables]
-    
+
     # Renomear a coluna de nível hierárquico
     df_group = df_group.rename(columns={groupVariable: 'location'})
 
     if filter_lv == 2:
-        df_group = df_group[df_group['administrative_area_level_1'] == filterCountry] 
+        df_group = df_group[df_group['administrative_area_level_1'] == filterCountry]
 
     # Retirar a coluna de nível hierárquico se ela existir
     if 'administrative_area_level_1' in df_group.columns:
         df_group = df_group.drop(columns=['administrative_area_level_1'])
-
-    print(df_group)
 
     grouped = df_group.groupby('location').sum().reset_index()
 
@@ -49,9 +47,6 @@ def draw(locations, keys):
 
     # Filtrar as linhas baseadas nas localizações fornecidas após o rankeamento
     grouped_filtered = grouped[grouped['location'].isin(locations)]
-
-    # Aqui você pode printar ou retornar o DataFrame filtrado
-    print(grouped_filtered)
 
     st.markdown(f'''
         ## Insights
@@ -70,6 +65,5 @@ def draw(locations, keys):
         # impime para cada coluna rank o nome da variavel e orank em markdlwm
         for col in rank_columns:
             text_rank.append(f" **{int(dado[col])}º** para *{columns.getVariableTranslation(col.replace('_rank', ''))}*")
-        
-        st.markdown(text+','.join(text_rank))
 
+        st.markdown(text+','.join(text_rank))
