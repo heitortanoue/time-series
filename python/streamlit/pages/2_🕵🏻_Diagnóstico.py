@@ -1,69 +1,86 @@
-import streamlit as st 
-from data import download_SQLiteDb 
-from functions.dbFunctions import *
-import altair as alt
-from functions.dbFunctions import *
-from functions.filterFunctions import *
+import streamlit as st
 import pandas as pd
+import functions.backend.sessionState as sessionState
+import functions.frontend.sidebar as sidebar
+import functions.utils.columns as columns
+import functions.frontend.analise.lineChart as lineChart
+import functions.frontend.diagnostico.windowing as windowSeries
+import functions.frontend.diagnostico.decomposition as decomposition
+import functions.frontend.diagnostico.autocorrelation as autocorrelation
+
+# Variável de estado que vamos usar nessa página
+sessionState.using_state(['downloaded_data'])
+
+# Mostra a sidebar
+filtered_df = sidebar.get_sidebar(diagnostico=True)
 
 #PAGE STARTS HERE
-st.markdown("# Diagnósticos dos dados" ) 
-st.markdown("""Texto e mais texto\n
-            Essa página deve conter os gráficos e medidas de diagnóstico das séries temporais
-            Filtradas em quaisquer um dos níveis e por data.
-            O filtro de data ainda não foi implementado""")  
+st.markdown("# Diagnósticos dos dados" )
 
-#DATAFRAME PLACEHOLDER 
-with st.expander("📈 Tabela com os dados"):
-    dataframe_placeholder = st.empty()
 
-#FILTROS 
-st.sidebar.header("Selecione os filtros")
+textWarning = """Nesta seção, é possível realizar um estudo de diagnóstico da série selecionada. Desse modo, é possível realizar a decomposição da série em suas componentes de Tendência, Sazonalidade e Ruído.\n
+Além disso também é disponibilizado o correlograma da série para estudos de possíveis modelos preditivos. """
 
-# Date filter
-date_range = date_filter(getLvl1Data())
+if sessionState.get_state('downloaded_data') is not True:
+    st.markdown(textWarning)
+    st.warning("Faça o download dos dados antes de continuar")
+elif sessionState.get_state('filter_lv') is None:
+    st.markdown(textWarning)
+    st.warning("Selecione os filtros antes de continuar")
+elif sessionState.get_state('window') is None:
+    st.markdown(textWarning)
+    st.warning('Selecione uma janela de tempo adequada')
+elif filtered_df is None or filtered_df.empty:
+    st.markdown(textWarning)
+    st.warning("Não há dados para serem analisados")
 
-filter_lvl1 = st.sidebar.multiselect(
-    "Selecione os Países",
-    options=lvl_1_filter()
-)
+else:
+    locations = sidebar.get_locations()
+    locations_str = ', '.join([location.split('-')[1] if '-' in location else location for location in locations])
+    st.markdown(f"### {locations_str}")
 
-if filter_lvl1:
+    st.warning("Selecione apenas **uma variável** por vez")
 
-    filter_lvl2 = st.sidebar.multiselect(
-        "Selecione os Estados",
-        options=lvl_2_filter(filter_lvl1)
+    defaultVariables = ['deaths']
+    variablesSelected = st.multiselect(
+        "Selecione as variáveis que deseja analisar",
+        options = columns.getVariableTranslationList(columns.getColumnGroups('serie_temporal')),
+        default = columns.getVariableTranslationList(defaultVariables)
     )
 
-    query_params1 = query_params(filter1=filter_lvl1) 
+    # Espaçador
+    st.text("")
 
-    df = getLvl1Data()
-    df = df[df['administrative_area_level_1'].isin(filter_lvl1)]
+    variablesKeys = columns.getVariableKeyList(variablesSelected)
 
-    #Adiciona dataframe ao placeholder 
-    dataframe_placeholder.dataframe(df)
+    st.markdown("### Gráfico de Linha")
+    lineChartDf = filtered_df.copy()
 
-    if filter_lvl2:
-                
-        filter_lvl3 = st.sidebar.multiselect(
-            "Selecione as Cidades",
-            options=lvl_3_filter(filter_lvl2)
-        ) 
 
-        query_params1, query_params2= query_params(filter1=filter_lvl1, filter2=filter_lvl2) 
+    lineChartDf = lineChartDf.rename(columns=columns.getVariableTranslationDict())
 
-        df = getLvl2Data() 
-        df = df[df['administrative_area_level_2'].isin(query_params2)]
+    lineChart.draw(lineChartDf, variablesSelected)
 
-        #Adiciona dataframe ao placeholder 
-        dataframe_placeholder.dataframe(df)
+    #Definindo janela de tempo
+    window = sidebar.get_window_time()
+    decomposition_model = sidebar.get_decomposition_model()
+    windowedDf = windowSeries.resample_time_series(lineChartDf, value_column=variablesSelected, time_window=window, time_column='Data')
 
-        if filter_lvl3:
+    # renomeando colunas, uma para data e outra para o valor
+    newTimeSeries = windowedDf.copy()
+    newTimeSeries.rename(columns={newTimeSeries.columns[0]: 'Valor'}, inplace=True)
 
-            query_params1, query_params2, query_params3 = query_params(filter1=filter_lvl1, filter2=filter_lvl2, filter3=filter_lvl3) 
+    # Decomposition Plot
+    st.markdown("## Decompondo a Série Temporal")
+    lag = sidebar.get_differentiation_lag()
+    residuals = decomposition.filter_and_plot_decomposition(newTimeSeries, lags=lag)
 
-            df = getFilteredData(query_params1, query_params2, query_params3)
+    # Test for stationarity and allow user to apply transformation
+    st.markdown("## Análise de Estacionariedade")
+    print('filteredDf')
+    print(residuals)
+    is_stationary = autocorrelation.test_stationarity(residuals)
 
-            #Adiciona dataframe ao placeholder 
-            dataframe_placeholder.dataframe(df)
-
+    # Autocorrelation Plot
+    st.markdown("## Autocorrelação")
+    autocorrelation.plot_autocorrelation(residuals)
