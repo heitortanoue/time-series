@@ -37,9 +37,9 @@ def draw(df, keys):
 
 
     barChart = alt.Chart(numerical_df).mark_line().encode(
-        y=alt.Y('Valor', title=None),
+        y=alt.Y('Valor'),
         x=alt.X(columns.getVariableTranslation('date'), title=None),
-        color=alt.Color("Categoria", title=None),
+        color=alt.Color("Categoria"),
         yOffset="Categoria"
     )
 

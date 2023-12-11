@@ -78,7 +78,7 @@ def filter_and_plot_decomposition(prev_time_series, lags=None):
 
    # Seasonal Decompose
     try:
-        decomposition = seasonal_decompose(make_proper_time_series(time_series), model=model)
+        decomposition = seasonal_decompose(make_proper_time_series(time_series), model=model, period=52)
     except ValueError as e:
         st.error(f"Error in decomposition: {e}")
         return

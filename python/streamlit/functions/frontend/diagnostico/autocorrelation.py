@@ -1,4 +1,4 @@
-from statsmodels.graphics.tsaplots import plot_acf
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.stattools import adfuller
 import matplotlib.pyplot as plt
 import streamlit as st
@@ -44,14 +44,35 @@ def plot_autocorrelation(time_series, lags=None):
     - None
     """
 
+
     # time_series = time_series.set_index('Data')
 
     if lags is not None:
-
-        plot_acf(time_series, lags)
-        plt.title(f'Autocorrelação com Lag {lags}')
-        st.pyplot(plt, clear_figure=True)
+        fig, ax = plt.subplots(figsize=(6,2))
+        plot_acf(time_series, lags, auto_ylims=True, ax=ax, title=f'Autocorrelação com Lag {lags}')
+        st.pyplot(fig, clear_figure=True, use_container_width=False)
     else:
-        plot_acf(time_series)
-        plt.title('Autocorrelação')
-        st.pyplot(plt, clear_figure=True)
+        fig , ax = plt.subplots(figsize=(5,3))
+        plot_acf(time_series, auto_ylims=True, ax=ax, title = "Autocorrelação")
+        st.pyplot(fig, clear_figure=True, use_container_width=True) 
+
+def plot_partial_autocorrelation(time_series, lags=None, fig_size=(10,8)):
+    """
+    Plot the partial autocorrelation of a time series.
+
+    Parameters:
+    - time_series (pd.Series): Time series for partial autocorrelation plotting.
+    - lags (int): Number of lags to include in the plot (default is None).
+
+    Returns:
+    - None
+    """
+
+    if lags is not None:
+        fig, ax = plt.subplots(figsize=(5,3))
+        plot_pacf(time_series, lags=lags, auto_ylims=True, ax=ax, title=f'Autocorrelação Parcial com {lags} diferença')
+        st.pyplot(fig, clear_figure=True, use_container_width=False)
+    else:
+        fig, ax = plt.subplots(figsize=(5,3))
+        plot_pacf(time_series, auto_ylims=True, ax=ax, title="Autocorrelação Parcial")
+        st.pyplot(fig, clear_figure=True, use_container_width=True)
