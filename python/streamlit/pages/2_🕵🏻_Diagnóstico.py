@@ -81,6 +81,13 @@ else:
     print(residuals)
     is_stationary = autocorrelation.test_stationarity(residuals)
 
+    #Acf and pacf columns 
+    col1, col2 =  st.columns(2)
+
     # Autocorrelation Plot
-    st.markdown("## Autocorrelação")
-    autocorrelation.plot_autocorrelation(residuals)
+    with col1:
+        autocorrelation.plot_autocorrelation(residuals)
+
+    with col2:
+        # Partial Autocorrelation Plot
+        autocorrelation.plot_partial_autocorrelation(residuals, fig_size=(6,6))
