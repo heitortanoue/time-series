@@ -20,9 +20,9 @@ def test_stationarity(time_series):
         st.write(f'Critical Value ({key}): {value}')
 
     if p_value < 0.05:
-        st.write(":green[The series is stationary.]")
+        st.write(":green[A série é estacionária.]")
     else:
-        st.write(":red[The series is not stationary. Consider differencing or transforming the series.]")
+        st.write(":red[A série não é estacionária. Considere diferenciar ou transformar a série]")
 
 def apply_transformation(time_series):
     """
@@ -49,10 +49,12 @@ def plot_autocorrelation(time_series, lags=None):
 
     if lags is not None:
         fig, ax = plt.subplots(figsize=(6,2))
+        ax.set_xlabel("Lags")
         plot_acf(time_series, lags, auto_ylims=True, ax=ax, title=f'Autocorrelação com Lag {lags}')
         st.pyplot(fig, clear_figure=True, use_container_width=False)
     else:
         fig , ax = plt.subplots(figsize=(5,3))
+        ax.set_xlabel("Lags")
         plot_acf(time_series, auto_ylims=True, ax=ax, title = "Autocorrelação")
         st.pyplot(fig, clear_figure=True, use_container_width=True) 
 
@@ -70,9 +72,11 @@ def plot_partial_autocorrelation(time_series, lags=None, fig_size=(10,8)):
 
     if lags is not None:
         fig, ax = plt.subplots(figsize=(5,3))
+        ax.set_xlabel("Lags")
         plot_pacf(time_series, lags=lags, auto_ylims=True, ax=ax, title=f'Autocorrelação Parcial com {lags} diferença')
         st.pyplot(fig, clear_figure=True, use_container_width=False)
     else:
         fig, ax = plt.subplots(figsize=(5,3))
+        ax.set_xlabel("Lags")
         plot_pacf(time_series, auto_ylims=True, ax=ax, title="Autocorrelação Parcial")
         st.pyplot(fig, clear_figure=True, use_container_width=True)

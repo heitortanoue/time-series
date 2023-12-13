@@ -118,7 +118,7 @@ def filter_and_plot_decomposition(prev_time_series, lags=None):
 
         plt.subplot(4, 1, 1)
         plt.plot(time_series, label='Série Original')
-        plt.title('Série Temporal Original')
+        plt.title('Série Temporal Transformada')
 
         plt.subplot(4, 1, 2)
         plt.plot(decomposition.trend, label='Tendência')
