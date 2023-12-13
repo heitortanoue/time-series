@@ -12,7 +12,7 @@ import functions.frontend.diagnostico.autocorrelation as autocorrelation
 sessionState.using_state(['downloaded_data'])
 
 # Mostra a sidebar
-filtered_df = sidebar.get_sidebar(diagnostico=True)
+filtered_df = sidebar.get_sidebar(diagnostico=True, cumulative=False)
 
 #PAGE STARTS HERE
 st.markdown("# Diagnósticos dos dados" )

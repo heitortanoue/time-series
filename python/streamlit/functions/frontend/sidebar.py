@@ -75,7 +75,7 @@ def create_filters(diagnostico:bool=False, cumulative:bool=True):
     df = df[df['administrative_area_level_1'].isin(filter_lvl1)]
     df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])] 
 
-    if not cumulative:
+    if cumulative is False:
         numerical_columns = df.select_dtypes(include=['number']).columns 
         df[numerical_columns] = df[numerical_columns].apply(lambda x: x.diff())
 
@@ -95,7 +95,7 @@ def create_filters(diagnostico:bool=False, cumulative:bool=True):
     df = df[df['administrative_area_level_2'].isin(query_params2)]
     df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
 
-    if not cumulative:
+    if cumulative is False:
         numerical_columns = df.select_dtypes(include=['number']).columns 
         df[numerical_columns] = df[numerical_columns].apply(lambda x: x.diff())
 
@@ -110,16 +110,16 @@ def create_filters(diagnostico:bool=False, cumulative:bool=True):
     sessionState.set_state('locations', filter_lvl3)
     df = database.getFilteredData(query_params1, query_params2, query_params3)
     
-    if not cumulative:
+    if cumulative is False:
         numerical_columns = df.select_dtypes(include=['number']).columns 
         df[numerical_columns] = df[numerical_columns].apply(lambda x: x.diff())
         return df 
     
     return df
 
-def get_sidebar(diagnostico:bool=False):
+def get_sidebar(diagnostico:bool=False, cumulative:bool=True):
     if sessionState.get_state('downloaded_data'):
-        df = create_filters(diagnostico, cumulative=False)
+        df = create_filters(diagnostico, cumulative)
         return df
 
     download_data_button()
