@@ -32,7 +32,7 @@ def date_filter(df):
     )
     return d
 
-def create_filters(diagnostico:bool=False):
+def create_filters(diagnostico:bool=False, cumulative:bool=True):
     sessionState.using_state(['locations'])
     date_range = date_filter(database.getLvl1Data())
 
@@ -73,9 +73,11 @@ def create_filters(diagnostico:bool=False):
 
     df = database.getLvl1Data()
     df = df[df['administrative_area_level_1'].isin(filter_lvl1)]
-    df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
+    df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])] 
 
-
+    if not cumulative:
+        numerical_columns = df.select_dtypes(include=['number']).columns 
+        df[numerical_columns] = df[numerical_columns].apply(lambda x: x.diff())
 
     if not filter_lvl2:
         sessionState.set_state('locations', filter_lvl1)
@@ -93,6 +95,10 @@ def create_filters(diagnostico:bool=False):
     df = df[df['administrative_area_level_2'].isin(query_params2)]
     df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
 
+    if not cumulative:
+        numerical_columns = df.select_dtypes(include=['number']).columns 
+        df[numerical_columns] = df[numerical_columns].apply(lambda x: x.diff())
+
     if not filter_lvl3:
         sessionState.set_state('locations', filter_lvl2)
         sessionState.set_state('filter_lv', 2)
@@ -103,11 +109,17 @@ def create_filters(diagnostico:bool=False):
     sessionState.set_state('filter_lv', 3)
     sessionState.set_state('locations', filter_lvl3)
     df = database.getFilteredData(query_params1, query_params2, query_params3)
+    
+    if not cumulative:
+        numerical_columns = df.select_dtypes(include=['number']).columns 
+        df[numerical_columns] = df[numerical_columns].apply(lambda x: x.diff())
+        return df 
+    
     return df
 
 def get_sidebar(diagnostico:bool=False):
     if sessionState.get_state('downloaded_data'):
-        df = create_filters(diagnostico)
+        df = create_filters(diagnostico, cumulative=False)
         return df
 
     download_data_button()

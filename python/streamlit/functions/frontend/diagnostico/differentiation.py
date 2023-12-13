@@ -32,12 +32,17 @@ def boxcox_transform(time_series: pd.Series):
 
 
 def difference_time_series(time_series: pd.Series, lags: int = 1):
-    return time_series.diff(lags).dropna()
+    return time_series.diff(lags).dropna() 
+
+def difference_01_and_difference_07(time_series: pd.Series):
+    detrended_serie = time_series.diff(periods=1).dropna() 
+    remove_seasonality = detrended_serie.diff(periods=7).dropna() 
+    return remove_seasonality
 
 def transformation_picker(time_series: pd.Series):
     transform_filter = st.selectbox(
         'Selecione uma transformação para aplicar à série temporal',
-        ('Série Original', 'Logarítmica', 'Box-Cox', 'Diferenciação Lag 01', 'Diferenciação Lag 02'))
+        ('Série Original', 'Logarítmica', 'Box-Cox', 'Diferenciação Lag 01', 'Diferenciação Lag 02', 'Diferenciação Lag 01 + Diferenciação Lag 07'))
 
     if transform_filter == 'Logarítmica':
         return log_transform(time_series)
@@ -46,6 +51,8 @@ def transformation_picker(time_series: pd.Series):
     elif transform_filter == 'Diferenciação Lag 01':
         return difference_time_series(time_series, 1)
     elif transform_filter == 'Diferenciação Lag 02':
-        return difference_time_series(time_series, 2)
+        return difference_time_series(time_series, 2) 
+    elif transform_filter == 'Diferenciação Lag 01 + Diferenciação Lag 07':
+        return difference_01_and_difference_07(time_series)
     else:
         return time_series

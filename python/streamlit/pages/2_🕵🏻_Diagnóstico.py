@@ -47,15 +47,14 @@ else:
         options = columns.getVariableTranslationList(columns.getColumnGroups('serie_temporal')),
         default = columns.getVariableTranslationList(defaultVariables)
     )
-
+    
     # Espaçador
     st.text("")
 
     variablesKeys = columns.getVariableKeyList(variablesSelected)
 
-    st.markdown("### Gráfico de Linha")
+    st.markdown("### Série Original")
     lineChartDf = filtered_df.copy()
-
 
     lineChartDf = lineChartDf.rename(columns=columns.getVariableTranslationDict())
 
