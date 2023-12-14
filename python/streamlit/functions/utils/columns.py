@@ -192,7 +192,9 @@ def getVariableKey(varName):
 def getVariableTranslationList(varList):
     return [traducao_variaveis[varName] for varName in varList]
 
-def getVariableKeyList(varList):
+def getVariableKeyList(varList:list|str):
+    if isinstance(varList, str):
+        return [list(traducao_variaveis.keys())[list(traducao_variaveis.values()).index(varList)]]
     return [list(traducao_variaveis.keys())[list(traducao_variaveis.values()).index(varName)] for varName in varList]
 
 def getAllVariablesTranslation():

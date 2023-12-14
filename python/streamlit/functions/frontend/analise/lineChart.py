@@ -1,11 +1,12 @@
 import pandas as pd
 import streamlit as st
-import altair as alt
+import altair as alt 
+from typing import Optional
 
 import functions.backend.sessionState as sessionState
 import functions.utils.columns as columns
 
-def draw(df, keys):
+def draw(df, keys, title:Optional[str|None], legend:Optional[str]):
     filter_lv = sessionState.get_state('filter_lv')
 
     # Agrupar e somar os dados por país
@@ -36,12 +37,21 @@ def draw(df, keys):
     numerical_df['Categoria'] = numerical_df['Categoria'] +' - ' +  numerical_df[columns.getVariableTranslation(groupVariable)]
 
 
-    barChart = alt.Chart(numerical_df).mark_line().encode(
+    if legend is None:
+        barChart = alt.Chart(numerical_df, title=f"{title}").mark_line().encode(
+        alt.Color("Categoria").legend(None),
         y=alt.Y('Valor'),
         x=alt.X(columns.getVariableTranslation('date'), title=None),
-        color=alt.Color("Categoria"),
-        yOffset="Categoria"
-    )
+        yOffset="Categoria",
+        )
+        
+    else:
+        barChart = alt.Chart(numerical_df).mark_line().encode(
+            y=alt.Y('Valor'),
+            x=alt.X(columns.getVariableTranslation('date'), title=None),
+            color=alt.Color("Categoria"),
+            yOffset="Categoria"
+        ) 
 
 
     rule_charts = []

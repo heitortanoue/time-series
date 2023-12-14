@@ -55,6 +55,7 @@ else:
     st.markdown("### Gráfico de Linha")
     lineChartDf = filtered_df.copy()
     lineChartDf = lineChartDf.rename(columns=columns.getVariableTranslationDict())
+    variablesSelected
 
     lineChart.draw(lineChartDf, variablesSelected)
     #st.line_chart(lineChartDf, x=columns.getVariableTranslation('date'), y=variablesSelected, use_container_width=True)
