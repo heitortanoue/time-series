@@ -56,7 +56,7 @@ def draw(locations, keys):
         dado = grouped_filtered.iloc[i]
 
         # cria uma string com o nome da localização e o rank
-        text = f'O :green[{dado.location}] é o ocupa as seguintes posições para cada categoria:'
+        text = f'A região administrativa :green[{dado.location}] é a que ocupa as seguintes posições para cada categoria:'
 
         # pega as colujnas que terminam em _rank
         rank_columns = [col for col in grouped_filtered.columns if col.endswith('_rank')]
