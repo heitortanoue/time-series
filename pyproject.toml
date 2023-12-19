@@ -19,6 +19,12 @@ seaborn = "^0.13.0"
 pmdarima = "^2.0.4"
 rdatasets = "^0.1.0"
 tqdm = "^4.66.1"
+statsforecast = "^1.6.0"
+plotly = "^5.18.0"
+nbformat = "^5.9.2"
+skforecast = "^0.11.0"
+sktime = "^0.24.1"
+yfinance = "^0.2.33"
 
 
 [build-system]
