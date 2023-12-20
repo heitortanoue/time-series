@@ -6,6 +6,9 @@ import functions.frontend.diagnostico.differentiation as differentiation
 import functions.frontend.analise.lineChart as lineChart 
 import functions.frontend.previsao.models as models 
 import functions.frontend.previsao.residuals as residuals
+from scipy.stats import jarque_bera
+from statsmodels.stats.diagnostic import acorr_ljungbox
+from statsmodels.tsa.stattools import breakvar_heteroskedasticity_test
 
 # Texto superior na página
 st.markdown("# Modelos e Previsões" ) 
@@ -97,7 +100,7 @@ else:
 
         actual_params = {}
         for param in params_name:
-            actual_params[param] = st.number_input(f"Parametro {param}", format = "%d")
+            actual_params[param] = st.number_input(f"Parametro {param}", format = "%f")
 
     #Modelos Automaticos
     if model_selected in automatic_models:
@@ -105,16 +108,16 @@ else:
         selected_function, automatic_args = models_functions[model_selected]
         #Caso especial AutoARIMA
         if model_selected == "ARIMA - Busca Automática (AutoARIMA)":
-            forecast_values, conf_int, resids, model_order = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
+            model_fit, forecast_values, conf_int, resids, model_order = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
         else:
-            forecast_values, conf_int, resids = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
+            model_fit, forecast_values, conf_int, resids = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
 
         #Plotando os Resultados 
         models.plot_test_data_forecast(test[variablesSelected], forecasts = forecast_values, conf_int = conf_int)
 
     else:
         selected_function = models_functions[model_selected]
-        forecast_values, conf_int, resids = selected_function(train=train[variablesSelected].fillna(0),
+        model_fit, forecast_values, conf_int, resids = selected_function(train=train[variablesSelected].fillna(0),
                                                                     steps=len(test), **actual_params)
         
         #Plotando os Resultados 
@@ -123,8 +126,8 @@ else:
     #Diagnóstico dos Resíduos   
     st.markdown("## Análise dos Resíduos 🔎") 
 
-    # #Gráfico de Diagnóstico dos Resíduos 
+    #Gráfico de Diagnóstico dos Resíduos 
     residuals.residual_analysis(resids)
 
-
-
+    # #Testes dos residuos
+    residuals.residuals_tests(model_selected, model_fit, resids)

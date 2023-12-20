@@ -6,6 +6,7 @@ import numpy as np
 from statsmodels.tsa.ar_model import AutoReg, ar_select_order 
 from statsmodels.tsa.arima.model import ARIMA 
 from pmdarima.arima import auto_arima
+import statsmodels.api as sm
 
 
 def AutoRegressiveModel(train: pd.Series, steps, lags: Optional[Union[list[int], int]]=None, max_lags: Optional[int | None] = None):
@@ -23,7 +24,7 @@ def AutoRegressiveModel(train: pd.Series, steps, lags: Optional[Union[list[int],
         confidence_intervals = forecast_results.conf_int() 
         residuals = ar_model_fit.resid
 
-        return forecast_values, confidence_intervals, residuals
+        return ar_model_fit, forecast_values, confidence_intervals, residuals
 
     else:
         if max_lags is not None:
@@ -38,7 +39,7 @@ def AutoRegressiveModel(train: pd.Series, steps, lags: Optional[Union[list[int],
             confidence_intervals = forecast_results.conf_int()
             residuals = ar_model_fit.resid
 
-            return forecast_values, confidence_intervals, residuals
+            return ar_model_fit, forecast_values, confidence_intervals, residuals
         
 def MovingAverageModel(train:pd.Series, q:int, steps:int):
     ma_model = ARIMA(endog=train, order=(0,0,q)).fit() 
@@ -49,7 +50,7 @@ def MovingAverageModel(train:pd.Series, q:int, steps:int):
     forecast_conf_int = forecasts.conf_int()
     residuals = ma_model.resid
     
-    return forecast_values, forecast_conf_int, residuals
+    return ma_model, forecast_values, forecast_conf_int, residuals
 
 def ARMAModel(train:pd.Series, p:int, q:int, steps:int):
     arma_model = ARIMA(endog=train, order=(p,0,q)).fit() 
@@ -60,7 +61,7 @@ def ARMAModel(train:pd.Series, p:int, q:int, steps:int):
     forecast_conf_int = forecasts.conf_int()
     residuals = arma_model.resid
     
-    return forecast_values, forecast_conf_int, residuals
+    return arma_model, forecast_values, forecast_conf_int, residuals
 
 def ARIMAModel(train: pd.Series, steps:int, p: Optional[int] = None, d: Optional[int] = None, q: Optional[int] = None, auto: bool = False):
 
@@ -74,7 +75,7 @@ def ARIMAModel(train: pd.Series, steps:int, p: Optional[int] = None, d: Optional
         conf_int = pd.DataFrame(conf_int)
         residuals = auto_arima_model_fit.resid()
         
-        return forecast, conf_int, residuals, model_order
+        return auto_arima_model_fit, forecast, conf_int, residuals, model_order
     
     arima_model_fit = ARIMA(train, order=(p,d,q)).fit() 
 
@@ -84,10 +85,21 @@ def ARIMAModel(train: pd.Series, steps:int, p: Optional[int] = None, d: Optional
     forecast_conf_int = forecasts.conf_int()
     residuals = arima_model_fit.resid
     
-    return forecast_values, forecast_conf_int, residuals
+    return arima_model_fit, forecast_values, forecast_conf_int, residuals
 
-def SARIMAModel(train:pd.Series):
-    pass
+def SARIMAModel(train:pd.Series, steps, p = None, d = None, q = None, s = None):
+    if s <= 1 or s is None:
+        sarima_model_fit = sm.tsa.SARIMAX(train, order=(p,d,q)).fit()
+    else:
+        sarima_model_fit = sm.tsa.SARIMAX(train, seasonal_order=(p,d,q,s)).fit()
+
+    #Forecasts 
+    forecasts = sarima_model_fit.get_forecast(steps=steps) 
+    forecast_values = forecasts.predicted_mean 
+    forecast_conf_int = forecasts.conf_int()
+    residuals = sarima_model_fit.resid
+
+    return sarima_model_fit, forecast_values, forecast_conf_int, residuals
 
 #Plotting Functions 
 
