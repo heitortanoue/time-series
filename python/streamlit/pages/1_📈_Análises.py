@@ -1,11 +1,8 @@
 import streamlit as st
-import pandas as pd
-
 import functions.backend.sessionState as sessionState
 import functions.frontend.sidebar as sidebar
 import functions.utils.columns as columns
 import functions.frontend.analise.barChart as barChart
-
 import functions.frontend.analise.insights as insights
 import functions.frontend.analise.lineChart as lineChart
 
@@ -55,7 +52,5 @@ else:
     st.markdown("### Gráfico de Linha")
     lineChartDf = filtered_df.copy()
     lineChartDf = lineChartDf.rename(columns=columns.getVariableTranslationDict())
-    variablesSelected
 
-    lineChart.draw(lineChartDf, variablesSelected)
-    #st.line_chart(lineChartDf, x=columns.getVariableTranslation('date'), y=variablesSelected, use_container_width=True)
+    lineChart.draw(lineChartDf, variablesSelected, title="", legend=None)
