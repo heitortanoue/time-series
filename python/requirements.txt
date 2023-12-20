@@ -75,3 +75,5 @@ wcwidth==0.2.6
 zipp==3.16.2
 matplotlib
 statsmodels
+pmdarima
+seaborn
