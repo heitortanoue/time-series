@@ -90,8 +90,8 @@ else:
         "SARIMA": models.SARIMAModel
     }
 
-    # Coloca os parametros do modelo para o usuario selecionar
-
+    
+    #Seleciona parametros do modelos nao-automaticos
     if model_selected in dict_params:
         params_name = dict_params[model_selected]
 
@@ -99,22 +99,32 @@ else:
         for param in params_name:
             actual_params[param] = st.number_input(f"Parametro {param}", format = "%d")
 
-    #Ajustando o Modelo 
+    #Modelos Automaticos
     if model_selected in automatic_models:
-        #Funcao selecionada 
+        #Seleciona Seleciona parametros do modelos automaticos
         selected_function, automatic_args = models_functions[model_selected]
+        #Caso especial AutoARIMA
         if model_selected == "ARIMA - Busca Automática (AutoARIMA)":
-            forecast_values, conf_int, model_order = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
+            forecast_values, conf_int, resids, model_order = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
         else:
-            forecast_values, conf_int = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
+            forecast_values, conf_int, resids = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
 
         #Plotando os Resultados 
         models.plot_test_data_forecast(test[variablesSelected], forecasts = forecast_values, conf_int = conf_int)
 
     else:
         selected_function = models_functions[model_selected]
-        forecast_values, conf_int = selected_function(train=train[variablesSelected].fillna(0),
+        forecast_values, conf_int, resids = selected_function(train=train[variablesSelected].fillna(0),
                                                                     steps=len(test), **actual_params)
         
         #Plotando os Resultados 
         models.plot_test_data_forecast(test[variablesSelected], forecasts = forecast_values, conf_int = conf_int)
+
+    #Diagnóstico dos Resíduos   
+    st.markdown("## Análise dos Resíduos 🔎") 
+
+    # #Gráfico de Diagnóstico dos Resíduos 
+    residuals.residual_analysis(resids)
+
+
+
