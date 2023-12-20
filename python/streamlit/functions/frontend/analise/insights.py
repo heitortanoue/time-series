@@ -67,3 +67,29 @@ def draw(locations, keys):
             text_rank.append(f" **{int(dado[col])}º** para *{columns.getVariableTranslation(col.replace('_rank', ''))}*")
 
         st.markdown(text+','.join(text_rank))
+
+def overviewDf(data:pd.DataFrame, variablesSelected):
+    data = data.rename(columns=columns.getVariableTranslationDict())
+    grouping_vars = data.columns[data.columns.str.contains("Administrativa")]
+    grouping_selected = [col for col in grouping_vars if data[col].notnull().all()] 
+    overview_df = data.groupby(grouping_selected)[variablesSelected].sum().reset_index() 
+    return overview_df
+
+def get_overviewDf(filter_lv:int, variablesSelected):
+    
+    # Obtém os dados apropriados dependendo do nível de filtro
+    if filter_lv == 1:
+        data = database.getLvl1Data()
+        df = overviewDf(data, variablesSelected)
+        return df 
+    
+    elif filter_lv == 2:
+        data = database.getLvl2Data() 
+        df = overviewDf(data, variablesSelected)
+        return df 
+    
+    elif filter_lv == 3:
+        data = database.getFilteredData() 
+        df = overviewDf(data, variablesSelected) 
+        return df
+
