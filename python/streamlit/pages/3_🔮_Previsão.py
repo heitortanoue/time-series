@@ -1,17 +1,17 @@
-import streamlit as st 
+import streamlit as st
 import functions.backend.sessionState as sessionState
 import functions.utils.columns as columns
 import functions.frontend.sidebar as sidebar
 import functions.frontend.diagnostico.differentiation as differentiation
-import functions.frontend.analise.lineChart as lineChart 
-import functions.frontend.previsao.models as models 
+import functions.frontend.analise.lineChart as lineChart
+import functions.frontend.previsao.models as models
 import functions.frontend.previsao.residuals as residuals
 from scipy.stats import jarque_bera
 from statsmodels.stats.diagnostic import acorr_ljungbox
 from statsmodels.tsa.stattools import breakvar_heteroskedasticity_test
 
 # Texto superior na página
-st.markdown("# Modelos e Previsões" ) 
+st.markdown("# Modelos e Previsões" )
 
 # Variável de estado que vamos usar nessa página
 sessionState.using_state(['downloaded_data'])
@@ -19,7 +19,10 @@ sessionState.using_state(['downloaded_data'])
 # Mostra a sidebar
 filtered_df = sidebar.get_sidebar(diagnostico=True, cumulative=False) #nao usar dados cumulativos para previsao
 
-textWarning = 'Colocar textinho'
+textWarning = """
+Aqui, exploramos análises preditivas dos dados da COVID-19. Combinando técnicas avançadas de séries temporais, o trabalho permite que os usuários interajam com o modelo, escolhendo variáveis específicas para entender a evolução da pandemia.
+Esta abordagem dinâmica realça a flexibilidade e precisão dos modelos preditivos em antecipar tendências de saúde pública, enfatizando a importância da análise de dados e tecnologia no contexto de uma crise de saúde global.
+"""
 if sessionState.get_state('downloaded_data') is not True:
     st.markdown(textWarning)
     st.warning("Faça o download dos dados antes de continuar")
@@ -44,7 +47,7 @@ else:
         "Selecione a variável que deseja modelar",
         options = columns.getVariableTranslationList(columns.getColumnGroups('variaveis'))
                 )
-        variablesKeys = columns.getVariableKeyList(variablesSelected)  
+        variablesKeys = columns.getVariableKeyList(variablesSelected)
 
         lineChart.draw(filtered_df, [variablesSelected], legend=None, title=f"Série Original - {variablesSelected}")
 
@@ -57,10 +60,10 @@ else:
 
     st.markdown("## Modelagem")
 
-    col_2_1, col_2_2 = st.columns(2) 
+    col_2_1, col_2_2 = st.columns(2)
 
     with col_2_1:
-        #Filtro de divisao de dados em treino e teste 
+        #Filtro de divisao de dados em treino e teste
         proportion = st.number_input("Defina a proporção entre Treino e Teste", format="%d", min_value = 1, max_value = 99, value  = 80)
         train_size = int((proportion/100)*len(filtered_df))
         train, test = filtered_df[:train_size], filtered_df[train_size:]
@@ -71,18 +74,18 @@ else:
         automatic_models = ["Autoregressivo - Busca Automática", "ARIMA - Busca Automática (AutoARIMA)"]
         params_models = ["Autoregressivo", "Médias Móveis", "ARIMA", "SARIMA"]
 
-        model_selected = st.selectbox("Qual modelo você deseja utilizar?", model_names) 
+        model_selected = st.selectbox("Qual modelo você deseja utilizar?", model_names)
 
     st.markdown(f"### Modelo {model_selected.title()}")
 
     # Parametros que os modelos utilizam
-    dict_params = {"Autoregressivo":["lags"], 
+    dict_params = {"Autoregressivo":["lags"],
                    "Médias Móveis":["q"],
                    "ARMA":["p", "q"],
                    "ARIMA":["p", "d", "q"],
-                   "SARIMA":["p", "d", "q", "s"]} 
-    
-    #Modelos 
+                   "SARIMA":["p", "d", "q", "s"]}
+
+    #Modelos
     models_functions = {
         "Autoregressivo": (models.AutoRegressiveModel),
         "Autoregressivo - Busca Automática": (models.AutoRegressiveModel, {"lags":None, "max_lags":20}),
@@ -93,7 +96,7 @@ else:
         "SARIMA": models.SARIMAModel
     }
 
-    
+
     #Seleciona parametros do modelos nao-automaticos
     if model_selected in dict_params:
         params_name = dict_params[model_selected]
@@ -102,32 +105,35 @@ else:
         for param in params_name:
             actual_params[param] = st.number_input(f"Parametro {param}", format = "%f")
 
-    #Modelos Automaticos
-    if model_selected in automatic_models:
-        #Seleciona Seleciona parametros do modelos automaticos
-        selected_function, automatic_args = models_functions[model_selected]
-        #Caso especial AutoARIMA
-        if model_selected == "ARIMA - Busca Automática (AutoARIMA)":
-            model_fit, forecast_values, conf_int, resids, model_order = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
+    try:
+        #Modelos Automaticos
+        if model_selected in automatic_models:
+            #Seleciona Seleciona parametros do modelos automaticos
+            selected_function, automatic_args = models_functions[model_selected]
+            #Caso especial AutoARIMA
+            if model_selected == "ARIMA - Busca Automática (AutoARIMA)":
+                model_fit, forecast_values, conf_int, resids, model_order = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
+            else:
+                model_fit, forecast_values, conf_int, resids = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
+
+            #Plotando os Resultados
+            models.plot_test_data_forecast(test[variablesSelected], forecasts = forecast_values, conf_int = conf_int)
+
         else:
-            model_fit, forecast_values, conf_int, resids = selected_function(train = train[variablesSelected].fillna(0), steps=len(test), **automatic_args)
+            selected_function = models_functions[model_selected]
+            model_fit, forecast_values, conf_int, resids = selected_function(train=train[variablesSelected].fillna(0),
+                                                                        steps=len(test), **actual_params)
 
-        #Plotando os Resultados 
-        models.plot_test_data_forecast(test[variablesSelected], forecasts = forecast_values, conf_int = conf_int)
+            #Plotando os Resultados
+            models.plot_test_data_forecast(test[variablesSelected], forecasts = forecast_values, conf_int = conf_int)
 
-    else:
-        selected_function = models_functions[model_selected]
-        model_fit, forecast_values, conf_int, resids = selected_function(train=train[variablesSelected].fillna(0),
-                                                                    steps=len(test), **actual_params)
-        
-        #Plotando os Resultados 
-        models.plot_test_data_forecast(test[variablesSelected], forecasts = forecast_values, conf_int = conf_int)
+        #Diagnóstico dos Resíduos
+        st.markdown("## Análise dos Resíduos 🔎")
 
-    #Diagnóstico dos Resíduos   
-    st.markdown("## Análise dos Resíduos 🔎") 
+        #Gráfico de Diagnóstico dos Resíduos
+        residuals.residual_analysis(resids)
 
-    #Gráfico de Diagnóstico dos Resíduos 
-    residuals.residual_analysis(resids)
-
-    # #Testes dos residuos
-    residuals.residuals_tests(model_selected, model_fit, resids)
+        # #Testes dos residuos
+        residuals.residuals_tests(model_selected, model_fit, resids)
+    except Exception as e:
+        st.error(f"Erro na modelagem: {e}")

@@ -47,7 +47,7 @@ else:
         options = columns.getVariableTranslationList(columns.getColumnGroups('serie_temporal')),
         default = columns.getVariableTranslationList(defaultVariables)
     )
-    
+
     # Espaçador
     st.text("")
 
@@ -60,33 +60,36 @@ else:
 
     lineChart.draw(lineChartDf, variablesSelected, title="", legend=None)
 
-    #Definindo janela de tempo
-    window = sidebar.get_window_time()
-    decomposition_model = sidebar.get_decomposition_model()
-    windowedDf = windowSeries.resample_time_series(lineChartDf, value_column=variablesSelected, time_window=window, time_column='Data')
+    try:
+        #Definindo janela de tempo
+        window = sidebar.get_window_time()
+        decomposition_model = sidebar.get_decomposition_model()
+        windowedDf = windowSeries.resample_time_series(lineChartDf, value_column=variablesSelected, time_window=window, time_column='Data')
 
-    # renomeando colunas, uma para data e outra para o valor
-    newTimeSeries = windowedDf.copy()
-    newTimeSeries.rename(columns={newTimeSeries.columns[0]: 'Valor'}, inplace=True)
+        # renomeando colunas, uma para data e outra para o valor
+        newTimeSeries = windowedDf.copy()
+        newTimeSeries.rename(columns={newTimeSeries.columns[0]: 'Valor'}, inplace=True)
 
-    # Decomposition Plot
-    st.markdown("## Decompondo a Série Temporal")
-    lag = sidebar.get_differentiation_lag()
-    residuals = decomposition.filter_and_plot_decomposition(newTimeSeries, lags=lag)
+        # Decomposition Plot
+        st.markdown("## Decompondo a Série Temporal")
+        lag = sidebar.get_differentiation_lag()
+        residuals = decomposition.filter_and_plot_decomposition(newTimeSeries, lags=lag)
 
-    # Test for stationarity and allow user to apply transformation
-    st.markdown("## Análise de Estacionariedade")
-    print('filteredDf')
-    print(residuals)
-    is_stationary = autocorrelation.test_stationarity(residuals)
+        # Test for stationarity and allow user to apply transformation
+        st.markdown("## Análise de Estacionariedade")
+        print('filteredDf')
+        print(residuals)
+        is_stationary = autocorrelation.test_stationarity(residuals)
 
-    #Acf and pacf columns 
-    col1, col2 =  st.columns(2)
+        #Acf and pacf columns
+        col1, col2 =  st.columns(2)
 
-    # Autocorrelation Plot
-    with col1:
-        autocorrelation.plot_autocorrelation(residuals)
+        # Autocorrelation Plot
+        with col1:
+            autocorrelation.plot_autocorrelation(residuals)
 
-    with col2:
-        # Partial Autocorrelation Plot
-        autocorrelation.plot_partial_autocorrelation(residuals, fig_size=(6,6))
+        with col2:
+            # Partial Autocorrelation Plot
+            autocorrelation.plot_partial_autocorrelation(residuals, fig_size=(6,6))
+    except Exception as e:
+        st.error(f"Erro ao realizar decomposição: {e}")
