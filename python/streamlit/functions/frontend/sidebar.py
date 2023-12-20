@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from streamlit.delta_generator import DeltaGenerator 
 
 import functions.backend.sessionState as sessionState
 import functions.dbFunctions as database
@@ -117,7 +118,7 @@ def create_filters(diagnostico:bool=False, cumulative:bool=True):
     
     return df
 
-def get_sidebar(diagnostico:bool=False, cumulative:bool=True):
+def get_sidebar(diagnostico:bool=False, cumulative:bool=True) -> pd.DataFrame | DeltaGenerator:
     if sessionState.get_state('downloaded_data'):
         df = create_filters(diagnostico, cumulative)
         return df

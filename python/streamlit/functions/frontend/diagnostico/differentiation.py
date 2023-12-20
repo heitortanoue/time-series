@@ -1,14 +1,19 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import boxcox
+from scipy.special import inv_boxcox
 import streamlit as st
 
-def log_transform(time_series: pd.Series):
+def log_transform(time_series: pd.Series, reverse_tranformation:bool = False):
+    if reverse_tranformation:
+        original_ts = np.exp(time_series) 
+        return original_ts
+    
     # remove zeros
     time_series = time_series.replace(0, np.nan).dropna()
     return np.log(time_series).dropna()
 
-def boxcox_transform(time_series: pd.Series):
+def boxcox_transform(time_series: pd.Series, reverse_tranformation:bool=False):
     """
     Apply Box-Cox transformation to a time series.
 
@@ -17,7 +22,11 @@ def boxcox_transform(time_series: pd.Series):
 
     Returns:
     - pd.Series: Box-Cox transformed time series.
-    """
+    """ 
+
+    if reverse_tranformation:
+        pass
+
     # Adicionar uma constante para evitar valores zero ou negativos
     ts_positive = time_series + 1 - time_series.min()
 
@@ -29,12 +38,17 @@ def boxcox_transform(time_series: pd.Series):
         st.error(f'Erro ao aplicar a transformação Box-Cox: {e}')
         return time_series
 
-
-
-def difference_time_series(time_series: pd.Series, lags: int = 1):
+def difference_time_series(time_series: pd.Series, lags: int = 1, reverse_tranformation:bool=False):
+    if reverse_tranformation:
+        return time_series.shift(-lags).cumsum()
     return time_series.diff(lags).dropna() 
 
-def difference_01_and_difference_07(time_series: pd.Series):
+def difference_01_and_difference_07(time_series: pd.Series, reverse_tranformation:bool=False):
+    if reverse_tranformation:
+        reverse_diff7 = time_series.shift(-7).cumsum() 
+        original_ts = reverse_diff7.cumsum() 
+        return original_ts
+    
     detrended_serie = time_series.diff(periods=1).dropna() 
     remove_seasonality = detrended_serie.diff(periods=7).dropna() 
     return remove_seasonality

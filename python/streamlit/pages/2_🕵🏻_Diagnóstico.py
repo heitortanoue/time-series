@@ -58,7 +58,7 @@ else:
 
     lineChartDf = lineChartDf.rename(columns=columns.getVariableTranslationDict())
 
-    lineChart.draw(lineChartDf, variablesSelected)
+    lineChart.draw(lineChartDf, variablesSelected, title="", legend=None)
 
     #Definindo janela de tempo
     window = sidebar.get_window_time()
