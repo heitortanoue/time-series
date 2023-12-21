@@ -205,3 +205,6 @@ def getVariableTranslationDict():
 
 def getVariableEnumTranslation(varName, enumValue):
     return traducao_variaveis_enum[varName][abs(enumValue)]
+
+def getVariableEnumTranslationList(varName):
+    return traducao_variaveis_enum[varName]
