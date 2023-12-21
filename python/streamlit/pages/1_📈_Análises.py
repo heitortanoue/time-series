@@ -18,10 +18,7 @@ st.markdown("# Análises")
 
 textWarning = 'Nesta seção, convidamos você a realizar uma análise exploratória dos dados de COVID-19. A análise exploratória é uma etapa fundamental para compreender as tendências e padrões nos dados, proporcionando insights valiosos sobre o impacto da pandemia. Para começar, selecione as regiões geográficas de interesse e as variáveis que deseja analisar. Explore os gráficos interativos, personalize a visualização conforme suas preferências e interprete os dados em busca de conclusões relevantes. Compartilhe suas descobertas e insights para contribuir para uma compreensão mais aprofundada da situação da COVID-19'
 
-#Overview Dataframe placeholder 
-with st.expander("📈 Tabela com os dados completos por nível"):
-    st.info("Utilize essa tabela para comparações entre todos os países", icon="ℹ️")
-    dataframe_placeholder = st.empty()
+
 
 if sessionState.get_state('downloaded_data') is not True:
     st.markdown(textWarning)
@@ -31,6 +28,12 @@ elif sessionState.get_state('filter_lv') is None:
     st.warning("Selecione os filtros antes de continuar")
 
 else:
+
+    #Overview Dataframe placeholder 
+    with st.expander("📈 Tabela com os dados cumulativos completos por nível"):
+        st.info("Utilize essa tabela para comparações entre todos os países", icon="ℹ️")
+        dataframe_placeholder = st.empty()
+
     locations = sidebar.get_locations()
     locations_str = ', '.join([location.split('-')[1] if '-' in location else location for location in locations])
     st.markdown(f"### {locations_str}")
